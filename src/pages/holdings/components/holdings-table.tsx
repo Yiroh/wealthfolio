@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { DataTableColumnHeader } from '@/components/ui/data-table/data-table-column-header';
 import { formatAmount, formatStockQuantity } from '@/lib/utils';
-import type { Row, ColumnDef, RowData } from '@tanstack/react-table';
+import type { Row, ColumnDef } from '@tanstack/react-table';
 import { GainAmount } from '@/components/gain-amount';
 import { GainPercent } from '@/components/gain-percent';
 
@@ -12,13 +12,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Holding } from '@/lib/types';
 import { useNavigate } from 'react-router-dom';
 
- 
-const numericSortFunction = (rowA:Row<RowData>, rowB: Row<RowData>, columnId: string) => {
+// fetchSize to be the batch size for fetching holdings, similar to ActivityTable
+// const fetchSize = 50;
+
+const numericSortFunction = (rowA: Row<Holding>, rowB: Row<Holding>, columnId: string) => {
   const valueA = rowA.getValue(columnId) as number;
   const valueB = rowB.getValue(columnId) as number;
-  return valueA - valueB
-}
-
+  return valueA - valueB;
+};
 
 export const HoldingsTable = ({
   holdings,
@@ -27,6 +28,8 @@ export const HoldingsTable = ({
   holdings: Holding[];
   isLoading: boolean;
 }) => {
+  const totalFetched = holdings.length;
+
   if (isLoading) {
     return (
       <div className="space-y-4 pt-6">
@@ -58,17 +61,23 @@ export const HoldingsTable = ({
       options: assetsTypes,
     },
   ];
+
   return (
     <div className="pt-6">
-      <DataTable
-        data={holdings}
-        columns={columns}
-        searchBy="symbol"
-        filters={filters}
-        defaultColumnVisibility={{ currency: false, symbolName: false, holdingType: false }}
-        defaultSorting={[{ id: 'symbol', desc: false }]}
-        scrollable={true}
-      />
+      <div className="h-[700px] overflow-y-auto rounded-md border">
+        <DataTable
+          data={holdings}
+          columns={columns}
+          searchBy="symbol"
+          filters={filters}
+          defaultColumnVisibility={{ currency: false, symbolName: false, holdingType: false }}
+          defaultSorting={[{ id: 'symbol', desc: false }]}
+          scrollable={true}
+        />
+      </div>
+      <div className="flex pl-2 text-xs text-muted-foreground">
+        {totalFetched} holdings loaded
+      </div>
     </div>
   );
 };
